@@ -204,11 +204,17 @@
     color:var(--wash-light); font-size:clamp(1.1rem,2.2vw,1.4rem);
     max-width:36ch;
   }
+  .candles-row{
+    display:flex; align-items:flex-end; justify-content:center;
+    gap:clamp(1.2rem, 4vw, 2.4rem); padding:1rem;
+  }
   .candle-wrap{
     cursor:pointer; user-select:none;
     display:flex; flex-direction:column; align-items:center;
-    padding:1rem;
+    transition: transform 0.25s ease;
   }
+  .candle-wrap:hover{ transform:translateY(-3px); }
+  .candle-wrap.done{ cursor:default; }
   .flame{
     width:14px; height:22px; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;
     background: radial-gradient(circle at 50% 70%, #fff2c4, var(--gold) 60%, var(--coral) 100%);
@@ -220,12 +226,13 @@
     0%,100%{ transform:scaleY(1) rotate(-1deg); }
     50%{ transform:scaleY(1.12) rotate(2deg); }
   }
-  .flame.out{ animation:none; opacity:0; transition:opacity 0.4s ease; }
+  .flame.out{ animation:none; opacity:0; transition:opacity 0.35s ease; }
   .stick{ width:12px; height:64px; background:linear-gradient(180deg, var(--coral), #b85639); border-radius:2px; }
   .base{ width:52px; height:10px; background:var(--gold); border-radius:3px; margin-top:2px; }
   .candle-hint{
     font-family:'Work Sans'; font-size:0.72rem; letter-spacing:0.18em; text-transform:uppercase;
-    color:var(--wash-light); opacity:0.6; margin-top:1.2rem;
+    color:var(--wash-light); opacity:0.6; margin-top:1.6rem;
+    min-height:1.2em;
   }
   .final-msg{
     font-family:'Fraunces', serif; font-weight:600; font-style:italic;
@@ -303,12 +310,12 @@
 
 <section class="closing">
   <p class="lead reveal">Make a wish, Fosua — this year's about to go crazy for you 👀</p>
-  <div class="candle-wrap" id="candle">
-    <div class="flame" id="flame"></div>
-    <div class="stick"></div>
-    <div class="base"></div>
-    <div class="candle-hint">tap to blow it out 💨</div>
+  <div class="candles-row" id="candlesRow">
+    <div class="candle-wrap" data-candle="1"><div class="flame"></div><div class="stick"></div><div class="base"></div></div>
+    <div class="candle-wrap" data-candle="2"><div class="flame"></div><div class="stick"></div><div class="base"></div></div>
+    <div class="candle-wrap" data-candle="3"><div class="flame"></div><div class="stick"></div><div class="base"></div></div>
   </div>
+  <div class="candle-hint" id="candleHint">blow out all 3 to make it count 💨</div>
   <div class="final-msg" id="finalMsg">LET'S GOOO FOSUA 🔥🎉 happy birthday, I love you!! 🎂✨</div>
 </section>
 
@@ -322,11 +329,16 @@
   }, {threshold:0.15});
   reveals.forEach(el=>obs.observe(el));
 
-  // candle blow + confetti
-  const candle = document.getElementById('candle');
-  const flame = document.getElementById('flame');
+  // candle blow-out game + confetti
+  const candleWraps = document.querySelectorAll('.candle-wrap');
+  const candleHint = document.getElementById('candleHint');
   const finalMsg = document.getElementById('finalMsg');
-  let blown = false;
+  const hints = [
+    "blow out all 3 to make it count 💨",
+    "2 left, keep going 👀",
+    "1 more, you've got this 🔥",
+  ];
+  let blownCount = 0;
 
   const canvas = document.getElementById('confetti-canvas');
   const ctx = canvas.getContext('2d');
@@ -366,12 +378,21 @@
     else ctx.clearRect(0,0,canvas.width,canvas.height);
   }
 
-  candle.addEventListener('click', ()=>{
-    if(blown) return;
-    blown = true;
-    flame.classList.add('out');
-    finalMsg.classList.add('show');
-    burst();
+  candleWraps.forEach(wrap=>{
+    wrap.addEventListener('click', ()=>{
+      if(wrap.classList.contains('done')) return;
+      wrap.classList.add('done');
+      wrap.querySelector('.flame').classList.add('out');
+      blownCount++;
+
+      if(blownCount < 3){
+        candleHint.textContent = hints[blownCount];
+      } else {
+        candleHint.textContent = "wish made ✨";
+        finalMsg.classList.add('show');
+        burst();
+      }
+    });
   });
 </script>
 
